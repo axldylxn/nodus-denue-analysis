@@ -70,6 +70,7 @@ if __name__ == "__main__":
     csv_files = glob.glob(os.path.join(DATA_PATH, "**/*.csv"), recursive=True)
     csv_files += glob.glob(os.path.join(DATA_PATH, "*.csv"))
     csv_files = list(set(csv_files)) #eliminate duplicate
+    csv_files = [f for f in csv_files if "diccionario" not in f.lower()]
 
     if not csv_files:
         print("❌ No se encontraron CSVs en data/raw/")
