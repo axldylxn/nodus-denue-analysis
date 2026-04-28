@@ -15,22 +15,19 @@ DROP TABLE IF EXISTS fact_empresas CASCADE;
 CREATE TABLE fact_empresas TABLESPACE fast_disk AS
 SELECT
     e.id,
-    e.nom_estab,
-    e.codigo_act                        AS sector_id,
+    e.codigo_act  AS sector_id,
     g.geo_id,
     t.tamanio_id,
-    e.fecha_alta                        AS fecha,
-    e.latitud,
-    e.longitud,
+    e.fecha_alta  AS fecha,
     e.tiene_email,
     e.tiene_web
 FROM denue_clean e
 LEFT JOIN dim_geografia g
-    ON TRIM(e.entidad)   = g.entidad
+    ON TRIM(e.entidad)    = g.entidad
     AND TRIM(e.municipio) = g.municipio
     AND TRIM(e.localidad) = g.localidad
 LEFT JOIN dim_tamanio t
-    ON e.tamanio_empresa = t.tamanio_nombre;
+    ON e.tamanio_empresa = t.tamanio_nombre
 """
 
 if __name__ == "__main__":

@@ -1,0 +1,58 @@
+import os
+from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
+
+load_dotenv()
+
+engine = create_engine(
+    f"postgresql+psycopg2://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
+    f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+)
+
+def fix_encoding(s):
+    if s is None:
+        return s
+    try:
+        return s.encode('latin-1').decode('utf-8')
+    except:
+        try:
+            return s.encode('latin-1').decode('utf-8').encode('latin-1').decode('utf-8')
+        except:
+            return s
+
+with engine.connect() as conn:
+    # Fix municipio
+    print("Arreglando municipios...")
+    rows = conn.execute(text('SELECT DISTINCT municipio FROM denue_clean')).fetchall()
+    count = 0
+    for (mun,) in rows:
+        fixed = fix_encoding(mun)
+        if fixed != mun:
+            conn.execute(text('UPDATE denue_clean SET municipio = :new WHERE municipio = :old'), {'new': fixed.upper(), 'old': mun})
+            count += 1
+    print(f'  Municipios corregidos: {count}')
+
+    # Fix nombre_act
+    print("Arreglando sectores...")
+    rows = conn.execute(text('SELECT DISTINCT nombre_act FROM denue_clean')).fetchall()
+    count = 0
+    for (nom,) in rows:
+        fixed = fix_encoding(nom)
+        if fixed != nom:
+            conn.execute(text('UPDATE denue_clean SET nombre_act = :new WHERE nombre_act = :old'), {'new': fixed, 'old': nom})
+            count += 1
+    print(f'  Sectores corregidos: {count}')
+
+    # Fix localidad
+    print("Arreglando localidades...")
+    rows = conn.execute(text('SELECT DISTINCT localidad FROM denue_clean')).fetchall()
+    count = 0
+    for (loc,) in rows:
+        fixed = fix_encoding(loc)
+        if fixed != loc:
+            conn.execute(text('UPDATE denue_clean SET localidad = :new WHERE localidad = :old'), {'new': fixed.upper(), 'old': loc})
+            count += 1
+    print(f'  Localidades corregidas: {count}')
+
+    conn.commit()
+    print("✅ Done")
